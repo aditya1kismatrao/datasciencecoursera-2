@@ -65,11 +65,15 @@ give_activity_names()
 # This function creates a second, independent tidy data set with the average
 # of each variable for each activity and each subject.
 get_avg_activity_subject <- function(){
-    f <- as.factor(interaction(data$activity, data$subject, sep='_'))
+    f <- as.factor(interaction(data$activity, data$subject, sep=','))
     m <- as.data.frame(apply(data[,c(-1,-563)], 2,
                              function(x) tapply(x, f, mean)))
+    row_names <- rownames(m)
+    activity <- sapply(row_names, function(x) x[1])
+    subject <- sapply(row_names, function(x) x[2])
+    m <- cbind(activity, subject, m)
     m
 }
 
 data_avg <- get_avg_activity_subject()
-print(data_avg)
+# print(data_avg)
