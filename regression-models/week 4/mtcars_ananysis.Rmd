@@ -1,0 +1,110 @@
+---
+title: "Motor Trend Car Road Tests Data Analysis"
+author: "Yashu Seth"
+date: "May 14, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Executive Summary
+
+### Data Description
+
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+
+### Data Format
+
+*Variable Details*
+
+- mpg	    Miles/(US) gallon
+- cyl	    Number of cylinders
+- disp	    Displacement (cu.in.)
+- hp	    Gross horsepower
+- drat	    Rear axle ratio
+- wt	    Weight (1000 lbs)
+- qsec	    1/4 mile time
+- vs	    V/S
+- am	    Transmission (0 = automatic, 1 = manual)
+- gear	    Number of forward gears
+- carb	    Number of carburetors
+
+### Report Description
+
+In this report I will analyze the mtcars data, and look for an appropriate relationship between the mpg (Miles/(US) gallon) variable and the am (Transmission (0 = automatic, 1 = manual)) variable and compare the difference between the two transmission types.
+
+## Data Manipulation
+
+I will convert the columns in the data must be represented as factor variables.
+```{r data_handling}
+data <- mtcars
+data$cyl <- as.factor(data$cyl)
+data$vs <- as.factor(data$vs)
+data$am <- as.factor(data$am)
+data$gear <- as.factor(data$gear)
+data$carb <- as.factor(data$carb)
+```
+
+## Exploratory Data Analysis
+
+First I will make a boxplot to compare the two trasmission types.
+
+```{r boxplot, fig.height=1.5, fig.width=2.5}
+library(ggplot2)
+g <- ggplot(data, aes(x=am, y=mpg)) + geom_boxplot() + 
+    xlab("Transmission (0 = automatic, 1 = manual)") + ylab("Miles/(US) gallon")
+g
+```
+This shows that manual transmission has higher values for mpg.
+
+Now, I will make a pairs plot to infer the extent of correlation between all the variables.
+
+```{r pairs_plot, fig.height=5, fig.width=7}
+pairs(mtcars, panel=panel.smooth, main = "Pairs plot for mtcars")
+```
+
+This shows that there exists a lot of corelation between some of the variables.
+We will exploit this fact later.
+
+## Regression Analysis
+
+```{r fit_am}
+fit_am <- lm(mpg~am, data)
+summary(fit_am)
+```
+
+This shows that there is an increase of 7.245 mpg in manual transmission as compared to the automatic transmission when only the am variable is considered.
+
+The adjusted R-squared value is 0.3385 which means almost 33.8% of the variance is explained by this model suggesting that this is not a very good fit. Hence we need to include more variables.
+
+Now lets fit a model with all the variables.
+```{r fit_all}
+fit_all <- lm(mpg~., data)
+summary(fit_all)
+```
+This has a residual error of 2.833 on 15 degrees of freedom. The adjsuted R-squared value is 0.779 which means that 77.9% of the variation in mpg variable is explained by this model.
+
+Now, we will observe the pairs plot once again to see and try to remove some of the unwanted variables.
+
+Lets see how this model behaves.
+```{r fit_part}
+fit_part <- lm(mpg ~ hp + qsec + wt + am , data)
+summary(fit_part)
+```
+
+By considering the variables hp, qsec, wt, am as regressors we get 83.6% explanation of the variance from the model.
+
+Let us make a residual plot of this model - 
+
+```{r residual_plot}
+par(mfrow = c(2,2))
+plot(fit_part)
+```
+
+There is no specific pattern visible here.
+
+Analyzing the coefficients of am variable in this model, we can say that there is increase of 2.92 in mpg when there is manual transmission present as compared to automatic transmission keeping hp, qsec and wt constant.
+
+**Hence a manual transmission is better for mpg.**
